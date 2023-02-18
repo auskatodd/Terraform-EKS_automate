@@ -22,6 +22,10 @@ READ.md
 5. make all the the 3 scripts executable
     sudo chmod +x *.sh
 
-6. run your master.sh script, seat back with a glass of wine and watch the magic
+6. run your master.sh script, seat back and watch the magic
+
+7. To destroy your cluster
+    - cd Terraform-EKS
+    - terraform destroy --auto-approve 
 
 7. ENJOY!!!
