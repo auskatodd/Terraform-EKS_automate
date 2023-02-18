@@ -19,7 +19,9 @@ sudo chown -R ubuntu ~/.kube
 terraform output kubeconfig > ~/.kube/config
 
 echo "################################################################"
-echo "Changing Ownership of Configuration Dicretory"
+echo "Taking Ownership of Configuration File and Dicretory"
+echo "################################################################"
+
 sudo chown -R ubuntu ~/.kube/config
 
 echo "################################################################"
