@@ -1,6 +1,6 @@
 READ.md
 
-###steps to use script to use Terraform and provision your EKS Cluster
+###steps to use script to provision your EKS Cluster using Terraform
 
 1. Install patches
     sudo apt update -y
@@ -10,7 +10,7 @@ READ.md
     b. aws configure
         - access_keys=$xxxxxxxxxxxxx
         - secret_keys=$xxxxxxxxxxxxx
-        NB: notice when you do git clone inside the maintest.sh file, it pulls from my repo instead because i added * profile = "default" in the providers.tf file inside Terraform-EKS directory to use your credentials stored in the ~/.aws/credentials files when you configured your awscli
+        NB: notice when you do git clone inside the maintest.sh file, it pulls from my repo instead because I added ~ profile = "default" ~ to the original providers.tf file inside Terraform-EKS directory (credit to Etech Consulting) to use your credentials stored in the ~/.aws/credentials file when you configured your awscli
 
 3. download and open the files with visual code or sublime text
 
