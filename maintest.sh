@@ -36,7 +36,7 @@ echo "Clone the EtechDevops-EKS repo"
 echo "##############################################################################################"
 
 git clone https://github.com/auskatodd/Terraform-EKS.git
-cd Terraform-EKS 
+cd ~/Terraform-EKS 
 
 ##############################################################################################
 echo "Installing the kubectl client on the Bootstrapper"
@@ -59,7 +59,7 @@ echo "##########################################################################
 echo "Starting Terraform Provisioning"
 echo "##############################################################################################"
 
-cd Terraform-EKS
+cd ~/Terraform-EKS
 terraform init 
 
 echo "##############################################################################################"

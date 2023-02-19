@@ -14,7 +14,7 @@ fi
 echo "################################################################"
 echo "Creating and Copying Configuration file to Destination"
 echo "################################################################"
-cd Terraform-EKS
+cd ~/Terraform-EKS
 sudo chown -R ubuntu ~/.kube
 terraform output kubeconfig > ~/.kube/config
 
