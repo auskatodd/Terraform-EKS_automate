@@ -1,12 +1,12 @@
 #!/bin/bash
 
 echo "################################################################"
-echo "Post-provision Configuration must, must check the README.md file again"
+echo "Post-provision Configuration: Checking .kube folder existence"
 echo "################################################################"
 
-if [ ! -d "~/.kube" ]; then
+if [ ! -d "$HOME/.kube" ]; then
 	echo "Creating .kube Folder in home directory..."
-	mkdir ~/.kube
+	mkdir $HOME/.kube
 else
 	echo "Folder Created or Already Exist"
 fi
@@ -15,14 +15,14 @@ echo "################################################################"
 echo "Creating and Copying Configuration file to Destination"
 echo "################################################################"
 cd ~/Terraform-EKS
-sudo chown -R ubuntu ~/.kube
-terraform output kubeconfig > ~/.kube/config
+sudo chown -R ubuntu $HOME/.kube
+terraform output kubeconfig > $HOME/.kube/config
 
 echo "################################################################"
-echo "Taking Ownership of Configuration File and Dicretory"
+echo "Taking Ownership of Configuration File and Directory"
 echo "################################################################"
 
-sudo chown -R ubuntu ~/.kube/config
+sudo chown -R ubuntu $HOME/.kube/config
 
 echo "################################################################"
 echo "Configure config-map-auth-aws"

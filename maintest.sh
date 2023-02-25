@@ -2,64 +2,65 @@
 
 #!/bin/bash
 
+set -e
+
 # Variable Declaration
-return=$?
-folder_name="~/.kube"
+folder_name="$HOME/.kube"
+terraform_version="0.13.4"
+kubectl_version="v1.23.6"
 
 echo "##############################################################################################"
-echo "Authenticating you User Access" #Download awscli and Configured your Access credentials
+echo "Authenticating User Access" #Download awscli and Configured your Access credentials
 echo "##############################################################################################"
 
 echo "##############################################################################################"
 echo "Applying Patches to Bootstrapper Server"
 echo "##############################################################################################"
 
-sudo apt update -y 
+sudo apt-get update -y 
 
 echo "##############################################################################################"
 echo "Downloading Unzip and git"
 echo "##############################################################################################"
 
-sudo apt install wget -y && sudo apt install unzip -y && sudo apt install git -y
+sudo apt-get install -y wget unzip git
 
-echo "Move to temporal directory to install Terraform, unarchive and move it to bin directory"
+echo "##############################################################################################"
+echo "Installing Terraform"
+echo "##############################################################################################"
+
 cd /tmp
-wget https://releases.hashicorp.com/terraform/0.13.4/terraform_0.13.4_linux_amd64.zip
-sudo unzip -o terraform_0.13.4_linux_amd64.zip -d /usr/local/bin
-unzip -o terraform_0.13.4_linux_amd64.zip
-sudo mv terraform /usr/local/bin
-cd
+wget https://releases.hashicorp.com/terraform/"$terraform_version"/terraform_"$terraform_version"_linux_amd64.zip
+sudo unzip -o terraform_"$terraform_version"_linux_amd64.zip -d /usr/local/bin
 terraform version
 
 echo "##############################################################################################"
-echo "Clone the EtechDevops-EKS repo"
+echo "Clone the Terraform-EKS repo"
 echo "##############################################################################################"
 
 git clone https://github.com/auskatodd/Terraform-EKS.git
-cd ~/Terraform-EKS 
+cd Terraform-EKS 
 
-##############################################################################################
-echo "Installing the kubectl client on the Bootstrapper"
+echo "##############################################################################################"
+echo "Installing kubectl"
 echo "##############################################################################################"
 
-curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl
+curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl_version/bin/linux/amd64/kubectl"
 sudo chmod +x kubectl
 sudo mv kubectl /usr/local/bin
 
 echo "##############################################################################################"
-echo "Downloading the aws-iam-authenticator"
+echo "Downloading aws-iam-authenticator"
 echo "##############################################################################################"
 
-wget https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.3.0/heptio-authenticator-aws_0.3.0_linux_amd64
-sudo chmod +x heptio-authenticator-aws_0.3.0_linux_amd64
-sudo mv heptio-authenticator-aws_0.3.0_linux_amd64 /usr/local/bin/heptio-authenticator-aws
-
+curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/"$kubectl_version"/2022-01-28/bin/linux/amd64/aws-iam-authenticator
+sudo chmod +x aws-iam-authenticator
+sudo mv aws-iam-authenticator /usr/local/bin/
 
 echo "##############################################################################################"
 echo "Starting Terraform Provisioning"
 echo "##############################################################################################"
 
-cd ~/Terraform-EKS
 terraform init 
 
 echo "##############################################################################################"
@@ -80,6 +81,13 @@ echo "##########################################################################
 
 terraform apply  -auto-approve 
 
+echo "##############################################################################################"
+echo "Waiting for EKS cluster to become available"
+echo "##############################################################################################"
+
 sleep 300
+
+echo "##############################################################################################
+
 
 
