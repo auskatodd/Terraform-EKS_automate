@@ -1,0 +1,298 @@
+1. Terraform configuration file structure:
+
+<resource> "<provider_resourcetype>" "<resourcename>" {
+  arguments = values .....
+}
+
+instance_id = <provider_resourcetype>.<resourcename>.id
+public_ip = <provider_resourcetype>.<resourcename>.public_ip
+
+
+terms to note:
+  - Configuration directory --> is the directory where all your terraform configuration files are located
+  - terraform provider  ---> this is the provider for the plugins which terraform is using to create resource within their Environment
+  - Configuration block ---> Block of codes that defines the resource to be created or Read 
+  - Configuration file ----> These are files that contains the entire codes use to build or create the infrastructure
+
+terraform commands:
+  $ terraform init --> Download the providers plugins and initializes your terraform Environment
+  $ terraform validate --> check for syntax on your configuration files
+  $ terraform plan ---> Create a blueprint of what is to be provision
+  $ terraform apply --> Applies the execution plan and create or modify a resource 
+  $ terraform destroy --> It destroys the resources created from a tf apply
+  $ terraform show --> To see all the resources under terraform control
+  $ terraform output -->  <arguments> --> Print the output data from the output block
+  $ terraform fmt -->  It reformat your configuration files and check syntax for readability and consistency
+  $ terraform refresh --> It refreshes the state file
+  $ terraform import  --> use to import a resource manually created into tf
+
+
+  Install your local terraform environment for other practicals:
+#!/bin/bash
+  curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+  sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+  sudo apt install terraform
+  terraform version #to check
+
+  Install awscli on your wsl:
+    $ sudo apt install awscli 
+  Create iam user:
+    $ aws configure #make to keep your keys to work
+
+AWS ec2 webserver:
+
+resource "aws_instance" "webserver"{
+  ami = "ami-here"
+  instance_type = "t2.micro"
+  tags = {
+    Name = "webserver"
+    Description = "An Nginx webserver for etech"
+  }
+
+
+user_data = <<EOF
+           #!/bin/bash
+           sudo apt update -y
+           sudo apt install nginx -y
+           sudo systemctl enable nginx
+           sudo systemctl start nginx
+           EOF
+key_name = aws_key_pair.web.id 
+vpc_security_group_ids = [ aws_security_group.ssh-access.id ]
+}
+resource "aws_key_pair" "web"{
+  public_key = file("/home/etechengineer/.ssh/web.pub")
+}
+
+resource "aws_security_group" "ssh-access"{
+  name = "ssh-access"
+  description = "Allow ssh access from the internet"
+  ingress{
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+output "publicip"{
+  value = aws_instance.webserver.public_ip
+}
+
+Input variables:
+
+  resource "local_file" "etech_txt" {
+    filename = "/home/etechengineer/etech.txt"
+    content = "we are Etech Engnieers"
+  }
+
+
+  To define a variable in terraform to represent same above file:
+    variables.tf 
+
+    variable "filename"{
+      default = "/home/etechengineer/etech.txt"
+    }
+
+    variable "content"{
+      default = "we are Etech Engineers"
+    }
+
+    Now attaching this variable to the main file gives us like this;
+
+   resource "local_file" "etechfile.txt" {
+    filename = [ var.filename ]
+    content = var.content
+  }
+
+now lets say you want to make changes to the main file you only need to change variables.tf file 
+
+Resource attributes: use to set the output of a resource as input to another resource
+example: <provider_resoucretype>.<resourcename>.<resourceattribute>
+
+attributes like;
+- id 
+- name 
+- private_ip 
+- public_ip
+etc ...
+
+Resource Dependencies: use to ensure that a resource can only be created after the dependent resoucre has been created
+ for example : use the following in your resource block defination file
+
+ depends_on = [
+   <provider_resourcetype>.<resourcename>
+ ]
+
+ Output variables:
+
+  output "variable_name"{
+    value = "<variable_value>"
+    <arguments>
+  }
+
+  some more terraform commands:
+    $ terraform providers 
+    $ terraform show -json
+    $ terraform providers mirror /home/etechengineer/new_local-file 
+
+
+  Datasource: it is use to read configurations details from a different source to provision a new resource 
+     syntax:
+
+      data "<provider_resourcetype>" "resourcename"{
+        <arguments>
+      }
+
+    To make use of the content of the data source into a new resource it looks like this;
+
+    (content=data.provider-resourcetype.resourcename.content)
+
+ Meta arguments in terraform: They are use to change the behaviour of any resource in terraform
+
+ example:
+  - count 
+ resoucre "provider_resourcetype" "resourcename"{
+  <arguments>
+  count = 3
+ }
+
+ to create 3 copy of same resourcename
+
+  - for_each --> use to iterate over a list of variables
+
+  example
+
+  for_each = toset(var.filename)  here 'toset' is use to convert a list of variables to a set
+
+  AWS S3 bucket: simple storage service bucket
+
+  resource "aws_s3_bucket" "payroll"{
+    bucket = "payroll-etech"
+    tags = {
+      Description = "Etech Consulting payroll"
+    }
+
+  }
+
+  resource "aws_s3_bucket_object" "team1-paylist"{
+    content = "/home/etechengineer/team1-paylist.txt"
+    key = "team1-paylist.txt"
+    bucket = aws_s3_bucket.payroll.id
+  }
+
+  data "aws_iam_group" "finance-etech"{
+    group_name = "finance-etech"
+  }
+
+  resource "aws_s3_bucket_policy" "payroll-policy"{
+  bucket = aws_s3_bucket.payroll.id 
+  policy = <<EOF
+
+
+
+EOF
+}
+
+
+  Mutable and immutable infrastructure:
+    Mutable infrastructure: These are infrastructures that can be ulter and mutate in which versioning can 
+                            configured (changes acceptable without destructions)
+
+
+    Immutable infrastructure: These are infrastructures that can NOT mutate ,meaning to effectuate a change we need to be
+                              destroy and rebuid.( changes not acceptable without destructions)
+
+  lifecycle Rules: add this function in your resource block so terraform create a new resource before destroying old version
+
+    lifecycle {
+      create_before_destroy = true
+    }
+
+    lifecycle {
+      prevent_destroy = true
+    }
+
+  variable( vars.tf) configuration file: Use to declare variables 
+
+    variable "variablename1" {
+      arguments
+    }
+
+    variable "variablename2" {
+      arguments
+    }
+
+    variable "variablename3" {
+      arguments
+    }
+
+   .tfvars(vars.tfvars) configuration file: Use to define variables
+
+   variablename1 = "jhjkhjhjjkkj"
+   variablename2 = "gfhfj"
+   variablename3 = "jhjhhgjh"
+
+   Function use to read variables: 
+  
+   resource <provider_resourcetype> <resourcename> {
+    arguments....
+    test = var.(variablename1)
+   }
+
+   https://networkcalc.com/subnet-calculator: USE TO STUDY CIDR CALCULATIONS
+
+==================================================================================================
+declarative approach
+procedural approach------
+
+desire state = current state --terraform state  
+desire state != current state
+
+terraform{}------
+provider{}
+resource{}
+data{}
+provisioner{}
+locals{}-----
+module{}
+backend{}
+validation{}
+dynamic{}
+condition{}
+
+==========================================================================================
+1.VPC 
+2.SUBNETS 
+3.ROUTE TABLE AND IGW
+4.SECURITY GROUP
+5.EC2 
+
+IP 32 BITS 
+CIDR   10.0.0.0/16 = 10011111.11101111.11001111.1001001
+                      NID                HID
+
+
+CLASS A  /8 = 255.0.0.0
+CLASS B /16 = 255.255.0.0
+CLASS C /24 = 255.255.255.0
+
+terraform.tfvars ---to define a variable 
+variable.tf ----- to declare a variable 
+
+variable "name" {
+
+}
+10.0.0.0/16 ---VPC
+
+10.0.1.0/24
+10.0.2.0/24
+
+variables.tf --> use to declare a variable
+terraform.tfvars --> define a variable 
+
+code . PATH 
+
+mkdir etech-tf-space && cd etech-tf-space 
+
+code . 
