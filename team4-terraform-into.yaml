@@ -117,7 +117,7 @@ attributes like;
 - public_ip
 etc ...
 
-Resource Dependencies: use to ensure that a resource can only be created after the dependent resoucre has been created
+Resource Dependencies: use to ensure that a resource can only be created after the dependent resource has been created
  for example : use the following in your resource block defination file
 
  depends_on = [
